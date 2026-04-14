@@ -1,0 +1,12 @@
+# Byte-compiled
+__pycache__/
+*.pyc
+
+# Cache
+.cache/
+
+# Env
+.env
+
+# IDE
+.DS_Store
