@@ -1,100 +1,101 @@
 ---
 name: search-hub
-description: Personal search hub integrating 6 engines (local files, Feishu wiki, XCrawl, DuckDuckGo, Jina Reader, NotebookLM) into a unified CLI. This skill should be used when the user needs to search across multiple sources, find information in local projects or Feishu docs, scrape web pages, or perform deep content retrieval. Triggers on keywords like "search", "搜索", "查找", "飞书搜索", "scrape", "read url", or when multi-source information gathering is needed.
+description: Personal search hub integrating 18 engines (local files, Feishu wiki, SearXNG, DuckDuckGo, Brave, Wikipedia, arXiv, Hacker News, GitHub, Reddit, Stack Overflow, Semantic Scholar, CrossRef, OpenAlex, Internet Archive, XCrawl, Jina Reader, NotebookLM) into a unified CLI with concurrent search. This skill should be used when the user needs to search across multiple sources, find information in local projects or Feishu docs, scrape web pages, or perform deep content retrieval. Triggers on keywords like "search", "搜索", "查找", "飞书搜索", "scrape", "read url", or when multi-source information gathering is needed.
 ---
 
 # Search Hub
 
 ## Overview
 
-Search Hub is a unified personal search engine that aggregates 6 different search and retrieval engines into a single CLI tool. It enables cross-source searching — from local project files to Feishu knowledge bases to the open web — with optional deep content reading capabilities.
+Search Hub is a unified personal search engine that aggregates 18 different search and retrieval engines into a single CLI tool. All searches run concurrently for maximum speed. Free engines are prioritized.
 
 ## Core Capabilities
 
-### 1. Unified Global Search
+### 1. Unified Global Search (Concurrent)
 
 Run a keyword search across all engines simultaneously:
 
 ```bash
-python3 scripts/search.py <keyword>
+python3 search.py <keyword>           # All engines (concurrent)
+python3 search.py <keyword> --deep    # + Jina reads top web results
+python3 search.py <keyword> --web     # Web search only
+python3 search.py <keyword> --academic # Academic search only
+python3 search.py <keyword> --tech    # Tech community search only
 ```
 
-Searches local projects + Feishu + XCrawl (with DuckDuckGo fallback). Add `--deep` to auto-read top web results via Jina Reader for content summaries.
+### 2. 18 Engines
 
-### 2. Feishu Knowledge Base
+**Web Search:**
+- `searxng` — Meta-search (aggregates Google, Bing, etc.), completely free
+- `xcrawl` — Web search/scrape/sitemap (paid, requires key)
+- `ddg` — DuckDuckGo (free, fallback)
+- `brave` — Brave Search (free 2000/month, optional key)
+
+**Knowledge:**
+- `wiki` — Wikipedia (free, auto-detects Chinese)
+- `feishu` — Feishu Wiki docs (requires app credentials)
+- `local` — Local project files (free)
+
+**Academic:**
+- `arxiv` — CS/Physics papers (free)
+- `scholar` — Semantic Scholar (free)
+- `crossref` — Academic metadata (free)
+- `openalex` — Academic works (free)
+
+**Tech Community:**
+- `hn` — Hacker News via Algolia (free)
+- `github` — GitHub repositories (free)
+- `reddit` — Reddit discussions (free)
+- `stackoverflow` — Stack Overflow Q&A (free)
+
+**Media & Tools:**
+- `archive` — Internet Archive (free)
+- `jina` — URL to Markdown reader (free)
+- `notebooklm` — AI deep Q&A on URLs (free, requires nlm CLI)
+
+### 3. Single Engine Usage
 
 ```bash
-python3 scripts/search.py feishu search <keyword>        # Search Feishu docs by title
-python3 scripts/search.py feishu search <keyword> --deep  # Search doc content too
-python3 scripts/search.py feishu read <url-or-token>      # Read a Feishu document
-python3 scripts/search.py feishu list                     # List all indexed docs
-python3 scripts/search.py feishu refresh                  # Rebuild Feishu index
+python3 search.py searxng <keyword>
+python3 search.py wiki <keyword> [--zh]
+python3 search.py arxiv <keyword>
+python3 search.py hn <keyword>
+python3 search.py github <keyword>
+python3 search.py reddit <keyword>
+python3 search.py stackoverflow <keyword>
+python3 search.py scholar <keyword>
+python3 search.py crossref <keyword>
+python3 search.py openalex <keyword>
+python3 search.py archive <keyword>
+# ... and all original engines
 ```
 
-Requires `FEISHU_APP_ID` and `FEISHU_APP_SECRET` in `.env`.
-
-### 3. Local Project Search
+### 4. Engine Status
 
 ```bash
-python3 scripts/search.py local <keyword>          # Search filenames
-python3 scripts/search.py local <keyword> --content # Search file contents too
+python3 search.py engines    # List all engines with availability
 ```
-
-Scans configured local projects (see `LOCAL_PROJECTS` dict in script). Supports `.md`, `.txt`, `.json` files.
-
-### 4. XCrawl Web Search & Scraping
-
-```bash
-python3 scripts/search.py xcrawl <keyword>         # Web search
-python3 scripts/search.py xcrawl scrape <url>       # Scrape page as markdown
-python3 scripts/search.py xcrawl map <url>           # Get site map URLs
-```
-
-Requires `XCRAWL_API_KEY` in `.env`.
-
-### 5. DuckDuckGo Search
-
-```bash
-python3 scripts/search.py ddg <keyword>
-```
-
-Fallback engine when XCrawl is unavailable. Requires `ddgs` or `duckduckgo-search` pip package.
-
-### 6. Jina Reader
-
-```bash
-python3 scripts/search.py jina <url>
-```
-
-Fetches any URL and converts to clean text via `r.jina.ai`. Cached for 24 hours.
-
-### 7. NotebookLM Integration
-
-```bash
-python3 scripts/search.py notebooklm read <url>           # Summarize a URL
-python3 scripts/search.py notebooklm ask <url> <question>  # Q&A on a URL
-```
-
-Requires the `nlm` CLI tool installed.
 
 ## Setup Requirements
 
 ### Environment File (.env)
 
-Create a `.env` file in the working directory with:
-
 ```
+# Required for Feishu
 FEISHU_APP_ID=your_app_id
 FEISHU_APP_SECRET=your_app_secret
-XCRAWL_API_KEY=your_xcrawl_key
-```
 
-Only the keys for engines you plan to use are needed.
+# Required for XCrawl
+XCRAWL_API_KEY=your_xcrawl_key
+
+# Optional: Brave Search (free 2000/month)
+BRAVE_API_KEY=your_brave_key
+```
 
 ### Python Dependencies
 
 - `ddgs` or `duckduckgo-search` — for DuckDuckGo search
-- Standard library only for other engines (`urllib`, `json`, `subprocess`)
+- Standard library only for all other engines
 
 ### External Tools
 
@@ -102,15 +103,14 @@ Only the keys for engines you plan to use are needed.
 
 ## Caching
 
-All search results are cached in `.cache/` with:
-- Default TTL: 1 hour (Jina: 24 hours)
-- Max cache size: 50MB with LRU eviction
-- Manage with: `python3 scripts/search.py cache` (stats) or `cache clear`
+- Default TTL: 1 hour (academic/wiki: 24 hours)
+- Max cache size: 50 MB with LRU eviction
+- Manage: `python3 search.py cache` (stats) or `cache clear`
 
 ## How to Use This Skill
 
-1. When the user asks to search for something, run the unified search first: `python3 scripts/search.py <keyword>`
-2. For Feishu-specific queries, use `feishu search` / `feishu read`
-3. For web content extraction, use `jina <url>` or `xcrawl scrape <url>`
-4. For deep research, add `--deep` flag to get content summaries of top results
-5. Results are printed in a structured format grouped by source engine
+1. When the user asks to search, run unified search: `python3 search.py <keyword>`
+2. Use `--web` for general web searches, `--academic` for papers, `--tech` for code/communities
+3. For single-source queries, use the engine name directly
+4. For web content extraction: `python3 search.py jina <url>`
+5. `python3 search.py engines` shows which engines are ready

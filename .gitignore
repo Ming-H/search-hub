@@ -1,15 +1,22 @@
 # Byte-compiled
 __pycache__/
 *.pyc
+*.pyo
 
 # Cache
 .cache/
 
-# Env
+# Env (contains secrets)
 .env
 
-# Config (contains API tokens)
+# Config (user-specific)
 config.json
 
 # IDE
 .DS_Store
+.vscode/
+.idea/
+
+# Distribution
+dist/
+*.egg-info/
